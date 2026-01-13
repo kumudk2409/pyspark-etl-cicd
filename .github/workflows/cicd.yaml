@@ -1,0 +1,60 @@
+name: PySpark ETL CI/CD Pipeline
+
+# Trigger pipeline on push to main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # ---------------------------
+  # CI: Test the PySpark code
+  # ---------------------------
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout source code
+      - uses: actions/checkout@v4
+
+      # Setup Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install dependencies for testing
+      - name: Install dependencies
+        run: |
+          pip install pyspark pytest
+
+      # Run unit tests
+      - name: Run unit tests
+        run: pytest tests/
+
+  # -------------------------------------
+  # CD: Build Docker image and deploy
+  # -------------------------------------
+  build-and-deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Authenticate with Docker registry
+      - name: Login to DockerHub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | \
+          docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Build and push Spark job image
+      - name: Build and push Docker image
+        run: |
+          docker build -t kumud2409/pyspark-etl:latest -f docker/Dockerfile .
+          docker push kumud2409/pyspark-etl:latest
+
+      # Deploy SparkApplication using Helm
+      - name: Deploy to Kubernetes using Helm
+        run: |
+          helm upgrade --install pyspark-etl helm/pyspark-etl
