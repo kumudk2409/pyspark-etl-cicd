@@ -1,0 +1,15 @@
+# Chart API version
+# v2 is required for Helm 3+
+apiVersion: v2
+
+# Name of the Helm chart
+name: pyspark-etl
+
+# Type of chart:
+type: application
+
+# Chart version
+version: 0.1.0
+
+# Application version
+appVersion: "1.0.0"
