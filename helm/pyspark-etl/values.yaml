@@ -1,0 +1,4 @@
+# Image values overridden during CI/CD if needed
+image:
+  repository: kumud2409/pyspark-etl
+  tag: latest
